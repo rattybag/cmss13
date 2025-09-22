@@ -263,6 +263,12 @@
 
 	X.set_faction(internal_faction)
 
+	var/turf/turf = get_turf(X)
+
+	if (X.hive.hivenumber == XENO_HIVE_NORMAL && !(SShijack.hijack_status in list(HIJACK_OBJECTIVES_NOT_STARTED, HIJACK_OBJECTIVES_SHIP_INBOUND)) && is_ground_level(turf?.z))) {
+		X.set_hive_and_update(XENO_HIVE_FORSAKEN)
+	}
+
 	if(X.hud_list)
 		X.hud_update()
 
@@ -803,17 +809,16 @@
 			continue
 		if(xeno.tier >= 1)
 			xenos_count++
-	for(var/mob/living/potential_host as anything in GLOB.alive_mob_list)
-		if(!is_ground_level(potential_host.z) || get_area(potential_host) == hijacked_dropship)
-			continue
-		var/obj/item/clothing/mask/facehugger/hugger = locate() in potential_host
-		if(hugger && hugger.hivenumber == hivenumber)
-			hugger.hivenumber = XENO_HIVE_FORSAKEN
+	for(var/i in GLOB.alive_mob_list)
+		var/mob/living/potential_host = i
 		if(!(potential_host.status_flags & XENO_HOST))
 			continue
+		if(!is_ground_level(potential_host.z) || get_area(potential_host) == hijacked_dropship)
+			continue
+		var/obj/item/alien_embryo/A = locate() in potential_host
+		if(A && A.hivenumber != hivenumber)
+			continue
 		for(var/obj/item/alien_embryo/embryo in potential_host)
-			if(embryo.hivenumber != hivenumber)
-				continue
 			embryo.hivenumber = XENO_HIVE_FORSAKEN
 		potential_host.update_med_icon()
 	for(var/mob/living/carbon/human/current_human as anything in GLOB.alive_human_list)
