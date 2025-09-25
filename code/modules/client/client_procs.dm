@@ -114,6 +114,13 @@ GLOBAL_LIST_INIT(whitelisted_client_procs, list(
 	if(tgui_Topic(href_list))
 		return
 
+	// Handle tacmap requests - simple approach following xeno pattern
+	if(href_list["MapView"] || href_list["CustomMapView"])
+		if(!personal_tacmap)
+			personal_tacmap = new /datum/tacmap/drawing/status_tab_view(src, MINIMAP_FLAG_USCM)
+		personal_tacmap.tgui_interact(mob)
+		return
+
 	//Logs all other hrefs
 	if(CONFIG_GET(flag/log_hrefs) && GLOB.world_href_log)
 		WRITE_LOG(GLOB.world_href_log, "<small>[src] (usr:[usr])</small> || [hsrc ? "[hsrc] " : ""][href]<br>")
@@ -317,6 +324,8 @@ GLOBAL_LIST_INIT(whitelisted_client_procs, list(
 
 	PostLogin()
 
+	// Personal tacmap is created on-demand, no initialization needed
+
 /client/proc/CanLogin()
 	// Version check below if we ever need to start checking against BYOND versions again.
 	var/breaking_version = CONFIG_GET(number/client_error_version)
@@ -486,6 +495,10 @@ GLOBAL_LIST_INIT(whitelisted_client_procs, list(
 	return ..()
 
 /client/Destroy()
+	// Cleanup personal tacmap
+	if(personal_tacmap)
+		QDEL_NULL(personal_tacmap)
+
 	QDEL_NULL(soundOutput)
 	QDEL_NULL(obj_window)
 	if(prefs)
@@ -514,6 +527,7 @@ GLOBAL_LIST_INIT(whitelisted_client_procs, list(
 #undef MIN_CLIENT_VERSION
 
 /client/var/external_username
+/client/var/datum/tacmap/drawing/status_tab_view/personal_tacmap
 
 /// To be used when displaying a client's "username" to players
 /client/proc/username()

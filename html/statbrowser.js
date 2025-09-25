@@ -513,6 +513,8 @@ function draw_debug() {
 function draw_status() {
 	var status_tab_map_href_exception =
 		"<a href='byond://?MapView=1'>View Tactical Map</a>";
+	var status_tab_custom_map_href_exception =
+		"<a href='byond://?CustomMapView=1'>View Tactical Map</a>";
 	if (!document.getElementById("Status")) {
 		createStatusTab("Status");
 		current_tab = "Status";
@@ -525,7 +527,8 @@ function draw_status() {
 				.appendChild(document.createElement("br"));
 		} else if (
 			// hardcoded because merely using .includes() to test for a href seems unreliable for some reason.
-			status_tab_parts[i] == status_tab_map_href_exception
+			status_tab_parts[i] == status_tab_map_href_exception ||
+			status_tab_parts[i] == status_tab_custom_map_href_exception
 		) {
 			var maplink = document.createElement("a");
 			maplink.innerHTML = status_tab_parts[i];
