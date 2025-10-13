@@ -300,12 +300,26 @@
 	if(stat != DEAD)
 		return TRUE
 
-	if(status_flags & XENO_HOST)
-		for(var/obj/item/alien_embryo/AE in contents)
-			if(AE.stage >= 5)
-				return TRUE
+    if(status_flags & XENO_HOST)
+        for(var/obj/item/alien_embryo/AE in contents)
+            // Get hive data for gestation multiplier
+            var/datum/hive_status/hive = GLOB.hive_datum[AE.hivenumber]
+            var/gestation_multiplier = hive ? hive.larva_gestation_multiplier : 1
 
-	return FALSE // leave the dead alone
+            // Calculate when this embryo will actually burst
+            var/stages_remaining = 5 - AE.stage
+            var/remaining_time_this_stage = AE.per_stage_hugged_time - AE.counter
+            var/time_until_burst = (remaining_time_this_stage + (stages_remaining - 1) * AE.per_stage_hugged_time) / gestation_multiplier
+
+            // Calculate when host becomes permanently dead
+            var/time_until_perma_death = ((timeofdeath + revive_grace_period) - world.time) / 10 //divide by 10 to convert from ticks to seconds
+
+            // Only allow dragging if burst happens before perma-death
+            if(time_until_burst < time_until_perma_death)
+                return TRUE
+
+        return FALSE
+    return FALSE
 
 //This proc is here to prevent Xenomorphs from picking up objects (default attack_hand behaviour)
 //Note that this is overridden by every proc concerning a child of obj unless inherited
